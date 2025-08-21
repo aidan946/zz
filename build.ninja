@@ -5,8 +5,8 @@
 cxx = g++
 outdir = build
 target = zz
-sources = src/main.cpp src/parsing.cpp
-objects = $outdir/main.o $outdir/parsing.o
+sources = src/main.cpp src/parsing.cpp src/printer.cpp
+objects = $outdir/main.o $outdir/parsing.o $outdir/printer.o
 target_path = $outdir/$target
 
 # Default build flags
@@ -45,7 +45,8 @@ build $outdir: makedir
 # Build targets
 build $outdir/main.o: compile src/main.cpp
 build $outdir/parsing.o: compile src/parsing.cpp
-build $target_path: link $outdir/main.o $outdir/parsing.o
+build $outdir/printer.o: compile src/printer.cpp
+build $target_path: link $outdir/main.o $outdir/parsing.o $outdir/printer.o
   description = Building $target
 
 # Debug build targets
@@ -53,7 +54,9 @@ build $outdir/main_debug.o: compile src/main.cpp
   cxxflags = $cxxflags $debugflags
 build $outdir/parsing_debug.o: compile src/parsing.cpp
   cxxflags = $cxxflags $debugflags
-build $outdir/debug_$target: link $outdir/main_debug.o $outdir/parsing_debug.o
+build $outdir/printer_debug.o: compile src/printer.cpp
+  cxxflags = $cxxflags $debugflags
+build $outdir/debug_$target: link $outdir/main_debug.o $outdir/parsing_debug.o $outdir/printer_debug.o
   cxxflags = $cxxflags $debugflags
   description = Building debug version
 
@@ -67,10 +70,6 @@ build test: test $target_path
 # Clean target
 build clean: clean
 
-# Install target
-build install: install $target_path
-  description = Installing $target
-
 # Run target
 build run: run $target_path
   description = Running $target
@@ -83,5 +82,4 @@ build all: phony $target_path
 build debug_build: phony $outdir/debug_$target
 build tests: phony test
 build cleanup: phony clean
-build installer: phony install
 build runner: phony run

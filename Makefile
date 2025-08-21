@@ -3,7 +3,7 @@ CXX = g++
 CXXFLAGS = -std=c++23 -Wall -Wextra -Wpedantic -O2
 DEBUGFLAGS = -g -O0 -DDEBUG
 TARGET = zz
-SOURCES = src/main.cpp src/parsing.cpp
+SOURCES = $(wildcard src/*.cpp)
 BUILDDIR = build
 OBJECTS = $(SOURCES:src/%.cpp=$(BUILDDIR)/%.o)
 TARGET_PATH = $(BUILDDIR)/$(TARGET)

@@ -1,8 +1,9 @@
 #include "parsing.hpp"
-#include <algorithm>
 #include <cctype>
+#include <charconv>
 #include <fstream>
 #include <iostream>
+#include <string>
 
 namespace zz {
 
@@ -12,11 +13,11 @@ Options Parser::parseCommandLineArgs(int argc, char *argv[], Options &options) {
   std::cout << "Program args ---------------------------\n\n";
 
   for (int i = 1; i < argc; ++i) {
-    std::string arg(argv[i]);
+    std::string_view arg(argv[i]);
     std::cout << arg << "\n";
 
     if (!arg.empty() && arg[0] == '-') {
-      std::string argCleaned = arg.substr(1);
+      std::string_view argCleaned = arg.substr(1);
 
       if (!argCleaned.empty() && argCleaned[0] == 'r') {
         nextArgRec = true;
@@ -30,12 +31,10 @@ Options Parser::parseCommandLineArgs(int argc, char *argv[], Options &options) {
         options.use_gitignore = false;
       }
     } else if (nextArgRec) {
-      if (isValidRecursiveArg(arg)) {
-        try {
-          options.recursive = static_cast<uint8_t>(std::stoi(arg));
-        } catch (const std::exception &) {
-          options.recursive = 0;
-        }
+      auto result = std::from_chars(arg.data(), arg.data() + arg.size(),
+                                    options.recursive);
+      if (result.ec == std::errc::invalid_argument) {
+        options.recursive = 0;
       }
       nextArgRec = false;
     }
@@ -73,10 +72,6 @@ std::vector<std::string> Parser::parseGitIgnore() {
   }
 
   return patterns;
-}
-
-bool Parser::isValidRecursiveArg(const std::string &arg) {
-  return !arg.empty() && std::all_of(arg.begin(), arg.end(), ::isdigit);
 }
 
 } // namespace zz
