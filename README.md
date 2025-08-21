@@ -3,22 +3,28 @@ A bad toy LS implementation written in C++
 
 ## Building
 
-### Using Make (Simple)
-```bash
-make
-```
+### Building with Ninja
 
-For debug build:
-```bash
-make debug
-```
+The project includes a standalone `build.ninja` file for building with Ninja:
 
-### Using CMake (Advanced)
 ```bash
-mkdir build
-cd build
-cmake ..
-make
+# Build the project
+ninja
+
+# Build debug version
+ninja debug
+
+# Run tests
+ninja test
+
+# Clean build artifacts
+ninja clean
+
+# Install to system (requires sudo)
+ninja install
+
+# Run the program
+ninja run
 ```
 
 ## Usage
@@ -37,7 +43,7 @@ With options:
 
 - `-r <depth>` - Enable recursive listing with specified depth
 - `--no-highlights` - Disable syntax highlighting (not yet implemented)
-- `--no-icons` - Disable file type icons
+- `--no-icons` - Disable filetype icons
 - `--no-list` - Use inline format instead of list format
 - `--no-gitignore` - Ignore .gitignore patterns
 
@@ -60,31 +66,25 @@ List everything including gitignored files:
 
 ## Dependencies
 
-- C++23 compatible compiler (GCC 7+, Clang 5+, MSVC 2017+)
+- C++23 compatible compiler (g++ or clang++)
 - Standard library with `<filesystem>` support
-
-## Installation
-
-```bash
-make install
-```
-
-Or with CMake:
-```bash
-cd build
-make install
-```
-
-This will install the `zz` binary to `/usr/local/bin/`.
+- Ninja build system
 
 ## Development
 
 To run tests:
 ```bash
-make test
+ninja test
 ```
 
 To clean build artifacts:
 ```bash
-make clean
+ninja clean
 ```
+
+To build debug version:
+```bash
+ninja debug
+```
+
+
