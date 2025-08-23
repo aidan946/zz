@@ -22,6 +22,9 @@ private:
   static bool shouldRecursivePrint(const Options &options, uint8_t depth, const std::string &entryKind);
   static bool isGitIgnored(const std::string &name,
                     const std::vector<std::string> &patterns);
+  static std::string getFileSize(const fs::directory_entry &entry, bool isDeatils);
+  static std::string getPermissions(const fs::directory_entry &entry, bool isDeatils);
+
 };
 
 } // namespace zz

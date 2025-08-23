@@ -11,6 +11,7 @@ enum class Sorting {
 
 struct Options {
     int recursive = 0;
+    bool details = false;
     bool highlighting = false;
     bool icons = true;
     bool list = true;

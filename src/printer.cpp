@@ -1,8 +1,8 @@
 #include <filesystem>
 #include <iostream>
 
-#include "types.hpp"
 #include "printer.hpp"
+#include "types.hpp"
 
 namespace fs = std::filesystem;
 
@@ -77,6 +77,50 @@ std::string Printer::getIndentation(uint8_t depth) {
   return std::string(depth * 2, ' ');
 }
 
+std::string Printer::getFileSize(const fs::directory_entry &entry,
+                                 bool isDeatils) {
+  if (isDeatils == true) {
+    if (entry.is_directory()) {
+      return "-";
+    } else {
+      std::string size = std::to_string(entry.file_size());
+      // TODO: Humanize size
+      return size + " ";
+    }
+  } else {
+    return " ";
+  }
+}
+
+std::string Printer::getPermissions(const fs::directory_entry &entry,
+                                    bool isDeatils) {
+  if (isDeatils == true) {
+    std::filesystem::perms p =
+        std::filesystem::status(entry.path()).permissions();
+
+    using std::filesystem::perms;
+    auto show = [=](char op, perms perm) -> std::string {
+      return (perms::none == (perm & p) ? "-" : std::string(1, op));
+    };
+
+    std::string output;
+
+    output += show('r', perms::owner_read);
+    output += show('w', perms::owner_write);
+    output += show('x', perms::owner_exec);
+    output += show('r', perms::group_read);
+    output += show('w', perms::group_write);
+    output += show('x', perms::group_exec);
+    output += show('r', perms::others_read);
+    output += show('w', perms::others_write);
+    output += show('x', perms::others_exec);
+
+    return output + " ";
+  } else {
+    return " ";
+  }
+}
+
 void Printer::printDirectory(
     const fs::path &dirPath, Options &options, uint8_t depth,
     const std::vector<std::string> &gitignorePatterns) {
@@ -93,6 +137,8 @@ void Printer::printDirectory(
     std::string indentation = getIndentation(depth);
     std::string filename = entry.path().filename().string();
     std::string ending = options.list ? "\n" : "  ";
+    std::string size = getFileSize(entry, options.details);
+    std::string permissions = getPermissions(entry, options.details);
 
     bool shouldPrint = true;
     if (options.use_gitignore && isGitIgnored(filename, gitignorePatterns)) {
@@ -101,12 +147,12 @@ void Printer::printDirectory(
 
     if (shouldPrint) {
       if (shouldRecursivePrint(options, depth, entryKind)) {
-        std::cout << indentation << icon << " " << filename << "(" << entryKind
-                  << ")" << ending;
+        std::cout << indentation << icon << " " << size << permissions
+                  << filename << ending;
         printDirectory(entry.path(), options, depth + 1, gitignorePatterns);
       } else {
-        std::cout << indentation << icon << " " << filename << "(" << entryKind
-                  << ")" << ending;
+        std::cout << indentation << icon << " " << size << permissions
+                  << filename << ending;
       }
     }
   }

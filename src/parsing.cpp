@@ -10,11 +10,11 @@ namespace zz {
 Options Parser::parseCommandLineArgs(int argc, char *argv[], Options &options) {
   bool nextArgRec = false;
 
-  std::cout << "Program args ---------------------------\n\n";
+  // std::cout << "Program args ---------------------------\n\n";
 
   for (int i = 1; i < argc; ++i) {
     std::string_view arg(argv[i]);
-    std::cout << arg << "\n";
+    // std::cout << arg << "\n";
 
     if (!arg.empty() && arg[0] == '-') {
       std::string_view argCleaned = arg.substr(1);
@@ -29,6 +29,8 @@ Options Parser::parseCommandLineArgs(int argc, char *argv[], Options &options) {
         options.list = false;
       } else if (argCleaned == "no-gitignore") {
         options.use_gitignore = false;
+      } else if (argCleaned == "details") {
+        options.details = true;
       }
     } else if (nextArgRec) {
       auto result = std::from_chars(arg.data(), arg.data() + arg.size(),

@@ -6,3 +6,5 @@
 .direnv/
 build/
 .ninja_log
+.zig-cache
+zig-out/bin
