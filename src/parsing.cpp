@@ -2,7 +2,6 @@
 #include <cctype>
 #include <charconv>
 #include <fstream>
-#include <iostream>
 #include <string>
 
 namespace zz {
@@ -10,11 +9,8 @@ namespace zz {
 Options Parser::parseCommandLineArgs(int argc, char *argv[], Options &options) {
   bool nextArgRec = false;
 
-  // std::cout << "Program args ---------------------------\n\n";
-
   for (int i = 1; i < argc; ++i) {
     std::string_view arg(argv[i]);
-    // std::cout << arg << "\n";
 
     if (!arg.empty() && arg[0] == '-') {
       std::string_view argCleaned = arg.substr(1);

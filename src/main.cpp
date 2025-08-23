@@ -13,12 +13,6 @@ int main(int argc, char *argv[]) {
   Options parsedOptions =
       Parser::parseCommandLineArgs(argc, argv, defaultOptions);
 
-  // std::cout << "Option rec: " << static_cast<int>(parsedOptions.recursive)
-  //           << "\n";
-  // std::cout << "Options icons: " << static_cast<int>(parsedOptions.icons)
-  //           << "\n";
-  // std::cout << "\n\nFiles & dirs ---------------------------\n";
-  //
   std::vector<std::string> gitignorePatterns = Parser::parseGitIgnore();
 
   try {
