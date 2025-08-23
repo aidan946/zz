@@ -83,9 +83,15 @@ std::string Printer::getFileSize(const fs::directory_entry &entry,
     if (entry.is_directory()) {
       return "-";
     } else {
-      std::string size = std::to_string(entry.file_size());
-      // TODO: Humanize size
-      return size + " ";
+      auto size = entry.file_size();
+      int o{};
+      double mantissa = size;
+      for (; mantissa >= 1024.; mantissa /= 1024., ++o)
+        ;
+      int humanizedSize = std::ceil(mantissa * 10.) / 10.;
+      const char humanizedEnding = "BKMGTPE"[o];
+      return o ? std::to_string(humanizedSize) + humanizedEnding + "B" + " "
+               : std::to_string(humanizedSize) + humanizedEnding + " ";
     }
   } else {
     return " ";
@@ -104,7 +110,6 @@ std::string Printer::getPermissions(const fs::directory_entry &entry,
     };
 
     std::string output;
-
     output += show('r', perms::owner_read);
     output += show('w', perms::owner_write);
     output += show('x', perms::owner_exec);
