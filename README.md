@@ -1,42 +1,31 @@
-# zz (C++ Version)
-A bad toy LS implementation written in C++
+# zz
+A bad toy LS
 
 ## Building
 
-### Building with Ninja
-
-The project includes a standalone `build.ninja` file for building with Ninja:
+The project uses zig as its build system:
 
 ```bash
 # Build the project
-ninja
-
-# Build debug version
-ninja debug
-
-# Run tests
-ninja test
-
-# Clean build artifacts
-ninja clean
-
-# Install to system (requires sudo)
-ninja install
+zig build
 
 # Run the program
-ninja run
+zig build run
+
+# Run the program with debug symbols
+zig build debug
 ```
 
 ## Usage
 
 Basic usage:
 ```bash
-./zz
+zz
 ```
 
 With options:
 ```bash
-./zz -r 3 --no-icons --no-gitignore
+zz -r 3 --no-icons --no-gitignore
 ```
 
 ### Command Line Options
@@ -47,44 +36,7 @@ With options:
 - `--no-list` - Use inline format instead of list format
 - `--no-gitignore` - Ignore .gitignore patterns
 
-## Examples
-
-List current directory with icons:
-```bash
-./zz
-```
-
-Recursively list 2 levels deep without icons:
-```bash
-./zz -r 2 --no-icons
-```
-
-List everything including gitignored files:
-```bash
-./zz --no-gitignore
-```
-
 ## Dependencies
 
-- C++23 compatible compiler (g++ or clang++)
-- Standard library with `<filesystem>` support
-- Ninja build system
-
-## Development
-
-To run tests:
-```bash
-ninja test
-```
-
-To clean build artifacts:
-```bash
-ninja clean
-```
-
-To build debug version:
-```bash
-ninja debug
-```
-
-
+- C++23 compatible compiler
+- zig build system
