@@ -1,4 +1,5 @@
 #include "parsing.hpp"
+#include "types.hpp"
 #include <cctype>
 #include <charconv>
 #include <fstream>
@@ -8,6 +9,7 @@ namespace zz {
 
 Options Parser::parseCommandLineArgs(int argc, char *argv[], Options &options) {
   bool nextArgRec = false;
+  bool nextArgSort = false;
 
   for (int i = 1; i < argc; ++i) {
     std::string_view arg(argv[i]);
@@ -17,6 +19,8 @@ Options Parser::parseCommandLineArgs(int argc, char *argv[], Options &options) {
 
       if (!argCleaned.empty() && argCleaned[0] == 'r') {
         nextArgRec = true;
+      } else if (argCleaned == "sort") {
+        nextArgSort = true;
       } else if (argCleaned == "no-highlights") {
         options.highlighting = false;
       } else if (argCleaned == "no-icons") {
@@ -35,6 +39,15 @@ Options Parser::parseCommandLineArgs(int argc, char *argv[], Options &options) {
         options.recursive = 0;
       }
       nextArgRec = false;
+    } else if (nextArgSort) {
+      if (arg == "folder-file") {
+        options.sorting = Sorting::FOLDER_FILE;
+      } else if (arg == "file-folder") {
+        options.sorting = Sorting::FILE_FOLDER;
+      } else if (arg == "none") {
+        options.sorting = Sorting::NONE;
+      }
+      nextArgSort = false;
     }
   }
 

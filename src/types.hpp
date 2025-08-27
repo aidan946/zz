@@ -2,7 +2,7 @@
 
 namespace zz {
 
-enum class Sorting { FOLDER_FILE, FILE_FOLDER, ALPHABETICAL, NONE };
+enum class Sorting { FOLDER_FILE, FILE_FOLDER, NONE };
 
 struct Options {
   int recursive = 0;
@@ -11,7 +11,7 @@ struct Options {
   bool icons = true;
   bool list = true;
   bool use_gitignore = true;
-  Sorting sorting = Sorting::FOLDER_FILE;
+  Sorting sorting = Sorting::FILE_FOLDER;
 };
 
 } // namespace zz

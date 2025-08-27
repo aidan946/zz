@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "printer.hpp"
+#include "sorter.hpp"
 #include "types.hpp"
 
 namespace fs = std::filesystem;
@@ -101,10 +102,9 @@ std::string Printer::getFileSize(const fs::directory_entry &entry,
 std::string Printer::getPermissions(const fs::directory_entry &entry,
                                     bool isDeatils) {
   if (isDeatils == true) {
-    std::filesystem::perms p =
-        std::filesystem::status(entry.path()).permissions();
+    fs::perms p = fs::status(entry.path()).permissions();
 
-    using std::filesystem::perms;
+    using fs::perms;
     auto show = [=](char op, perms perm) -> std::string {
       return (perms::none == (perm & p) ? "-" : std::string(1, op));
     };
@@ -131,7 +131,22 @@ void Printer::printDirectory(
     const std::vector<std::string> &gitignorePatterns) {
   std::error_code ec;
 
-  for (const auto &entry : fs::directory_iterator(dirPath, ec)) {
+  std::vector<fs::directory_entry> sortedDir;
+
+  if (options.sorting != Sorting::NONE) {
+    sortedDir = Sorter::sortDirectory(dirPath, options.sorting);
+  } else {
+    auto collectEntries = [](const fs::path &path, std::error_code &ec) {
+      std::vector<fs::directory_entry> entries;
+      for (const auto &entry : fs::directory_iterator(path, ec)) {
+        entries.push_back(entry);
+      }
+      return entries;
+    };
+    sortedDir = collectEntries(dirPath, ec);
+  }
+
+  for (const auto &entry : sortedDir) {
     if (ec) {
       std::cerr << "Error reading directory: " << ec.message() << std::endl;
       continue;
