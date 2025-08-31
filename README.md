@@ -1,6 +1,12 @@
 # zz
 A bad toy LS
 
+## Todo:
+ - [ ] Add sorting supprt
+ - [ ] Add highlighting
+ - [ ] Add themes
+ - [ ] Make faster (Try to remove skill issues)
+
 ## Building
 
 The project uses zig as its build system:
