@@ -18,9 +18,10 @@ pub fn build(b: *std.Build) void {
             "src/main.cpp",
             "src/parsing.cpp",
             "src/printer.cpp",
+            "src/sorter.cpp",
         },
         .flags = &.{
-            "-std=c++23",
+            "-std=c++26",
             "-Wall",
             "-Wextra",
             "-Wpedantic",
@@ -55,6 +56,7 @@ pub fn build(b: *std.Build) void {
             "src/main.cpp",
             "src/parsing.cpp",
             "src/printer.cpp",
+            "src/sorter.cpp",
         },
         .flags = &.{
             "-std=c++23",

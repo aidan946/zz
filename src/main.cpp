@@ -6,14 +6,14 @@
 #include "printer.hpp"
 #include "types.hpp"
 
+using std::string;
+
 int main(int argc, char *argv[]) {
   using namespace zz;
 
-  Options defaultOptions;
-  Options parsedOptions =
-      Parser::parseCommandLineArgs(argc, argv, defaultOptions);
+  Options parsedOptions = Parser::parseCommandLineArgs(argc, argv);
 
-  std::vector<std::string> gitignorePatterns = Parser::parseGitIgnore();
+  std::vector<string> gitignorePatterns = Parser::parseGitIgnore();
 
   try {
     Printer::printDirectory(fs::current_path(), parsedOptions, 0,

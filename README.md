@@ -4,6 +4,7 @@ A bad toy LS
 ## Todo:
  - [ ] Add sorting supprt
  - [ ] Add highlighting
+ - [ ] Support config file
  - [ ] Add themes
  - [ ] Make faster (Try to remove skill issues)
 
@@ -31,7 +32,7 @@ zz
 
 With options:
 ```bash
-zz -r 3 --no-icons --no-gitignore
+zz -r 3 -no-icons -no-gitignore
 ```
 
 ### Command Line Options

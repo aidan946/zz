@@ -1,6 +1,6 @@
 # Compiler and flags
 CXX = g++
-CXXFLAGS = -std=c++23 -Wall -Wextra -Wpedantic -O2
+CXXFLAGS = -std=c++26 -Wall -Wextra -Wpedantic -O2
 DEBUGFLAGS = -g -O0 -DDEBUG
 TARGET = zz
 SOURCES = $(wildcard src/*.cpp)

@@ -3,11 +3,13 @@
 #include <cctype>
 #include <charconv>
 #include <fstream>
+#include <ranges>
 #include <string>
 
 namespace zz {
 
-Options Parser::parseCommandLineArgs(int argc, char *argv[], Options &options) {
+Options Parser::parseCommandLineArgs(int argc, char *argv[]) {
+  Options options;
   bool nextArgRec = false;
   bool nextArgSort = false;
 
@@ -17,7 +19,7 @@ Options Parser::parseCommandLineArgs(int argc, char *argv[], Options &options) {
     if (!arg.empty() && arg[0] == '-') {
       std::string_view argCleaned = arg.substr(1);
 
-      if (!argCleaned.empty() && argCleaned[0] == 'r') {
+      if (!argCleaned.empty() && argCleaned.starts_with('r')) {
         nextArgRec = true;
       } else if (argCleaned == "sort") {
         nextArgSort = true;
@@ -55,32 +57,27 @@ Options Parser::parseCommandLineArgs(int argc, char *argv[], Options &options) {
 }
 
 std::vector<std::string> Parser::parseGitIgnore() {
-  std::vector<std::string> patterns;
-
-  // Add default patterns
-  patterns.push_back(".jj");
-  patterns.push_back(".git");
+  std::vector<std::string> patterns{".jj", ".git"};
 
   std::ifstream file(".gitignore");
-  if (!file.is_open()) {
+  if (!file) {
     return patterns;
   }
 
-  std::string line;
-  while (std::getline(file, line)) {
-    // Skip empty lines and comments
-    if (line.empty() || line[0] == '#') {
-      continue;
-    }
+  auto lines =
+      std::ranges::istream_view<std::string>(file) |
+      std::views::filter([](const std::string &line) {
+        return !line.empty() && !line.starts_with('#');
+      }) |
+      std::views::transform([](std::string line) {
+        auto trimmed = line | std::views::drop_while(::isspace) |
+                       std::views::reverse | std::views::drop_while(::isspace) |
+                       std::views::reverse;
+        return std::string(trimmed.begin(), trimmed.end());
+      }) |
+      std::views::filter([](const std::string &line) { return !line.empty(); });
 
-    // Trim whitespace
-    line.erase(0, line.find_first_not_of(" \t\r"));
-    line.erase(line.find_last_not_of(" \t\r") + 1);
-
-    if (!line.empty()) {
-      patterns.push_back(line);
-    }
-  }
+  std::ranges::copy(lines, std::back_inserter(patterns));
 
   return patterns;
 }
