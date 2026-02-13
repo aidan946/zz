@@ -26,7 +26,7 @@ std::vector<fs::directory_entry> Sorter::sortDirectory(const fs::path &dirPath,
   return entries;
 }
 
-void sort_file_folder(std::vector<fs::directory_entry> &v) {
+void Sorter::sort_file_folder(std::vector<fs::directory_entry> &v) {
   int n = v.size();
   std::vector<fs::directory_entry> files;
   std::vector<fs::directory_entry> folders;
@@ -39,6 +39,6 @@ void sort_file_folder(std::vector<fs::directory_entry> &v) {
   }
 }
 
-void sort_folder_file(std::vector<fs::directory_entry> &v) {}
+void Sorter::sort_folder_file(std::vector<fs::directory_entry> &v) {}
 
 } // namespace zz
