@@ -31,7 +31,7 @@ void Sorter::sort_file_folder(std::vector<fs::directory_entry> &v) {
   std::vector<fs::directory_entry> files;
   std::vector<fs::directory_entry> folders;
   for (int i = 0; i < n - 1; i++) {
-    if (v[i].is_directory()){
+    if (v[i].is_directory()) {
       files.push_back(v[i]);
     } else if (v[i].is_regular_file()) {
       files.push_back(v[i]);
@@ -39,6 +39,16 @@ void Sorter::sort_file_folder(std::vector<fs::directory_entry> &v) {
   }
 }
 
-void Sorter::sort_folder_file(std::vector<fs::directory_entry> &v) {}
-
+void Sorter::sort_folder_file(std::vector<fs::directory_entry> &v) {
+  int n = v.size();
+  std::vector<fs::directory_entry> files;
+  std::vector<fs::directory_entry> folders;
+  for (int i = 0; i < n - 1; i++) {
+    if (v[i].is_regular_file()) {
+      files.push_back(v[i]);
+    } else if (v[i].is_directory()) {
+      files.push_back(v[i]);
+    }
+  }
+}
 } // namespace zz

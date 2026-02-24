@@ -1,5 +1,7 @@
 #include <filesystem>
 #include <iostream>
+#include <cmath>
+#include <cstdint>
 
 #include "printer.hpp"
 #include "sorter.hpp"
