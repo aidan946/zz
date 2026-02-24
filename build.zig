@@ -30,7 +30,6 @@ pub fn build(b: *std.Build) void {
 
     exe.linkLibC();
     exe.linkLibCpp();
-    exe.linkSystemLibrary("pthread");
 
     b.installArtifact(exe);
 
@@ -59,7 +58,7 @@ pub fn build(b: *std.Build) void {
             "src/sorter.cpp",
         },
         .flags = &.{
-            "-std=c++23",
+            "-std=c++26",
             "-Wall",
             "-Wextra",
             "-Wpedantic",
@@ -69,7 +68,6 @@ pub fn build(b: *std.Build) void {
 
     debug_exe.linkLibC();
     debug_exe.linkLibCpp();
-    debug_exe.linkSystemLibrary("pthread");
 
     const debug_cmd = b.addRunArtifact(debug_exe);
     if (b.args) |args| {

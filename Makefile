@@ -1,14 +1,17 @@
 # Compiler and flags
-CXX = g++
-CXXFLAGS = -std=c++26 -Wall -Wextra -Wpedantic -O2
+CXX ?= g++
+CXXFLAGS = -std=c++26 -Wall -Wextra -Wpedantic
+RELEASEFLAGS = -O2
 DEBUGFLAGS = -g -O0 -DDEBUG
 TARGET = zz
 SOURCES = $(wildcard src/*.cpp)
 BUILDDIR = build
 OBJECTS = $(SOURCES:src/%.cpp=$(BUILDDIR)/%.o)
+DEPS = $(OBJECTS:.o=.d)
 TARGET_PATH = $(BUILDDIR)/$(TARGET)
 
-# Default target
+# Default target (release)
+all: CXXFLAGS += $(RELEASEFLAGS)
 all: $(BUILDDIR) $(TARGET_PATH)
 
 # Create build directory
@@ -19,13 +22,16 @@ $(BUILDDIR):
 $(TARGET_PATH): $(OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $(TARGET_PATH) $(OBJECTS)
 
-# Build object files
+# Build object files with header dependency tracking
 $(BUILDDIR)/%.o: src/%.cpp | $(BUILDDIR)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -MMD -MP -c $< -o $@
+
+# Include auto-generated header dependencies
+-include $(DEPS)
 
 # Debug build
 debug: CXXFLAGS += $(DEBUGFLAGS)
-debug: $(TARGET)
+debug: $(BUILDDIR) $(TARGET_PATH)
 
 # Clean build artifacts
 clean:
@@ -46,6 +52,6 @@ run: $(TARGET_PATH)
 
 # Build and run with test arguments
 test: $(TARGET_PATH)
-	./$(TARGET_PATH) -r 2 --no-icons
+	./$(TARGET_PATH) -r 2 -details
 
 .PHONY: all debug clean install uninstall run test
