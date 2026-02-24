@@ -1,27 +1,25 @@
+#include <filesystem>
 #include <iostream>
-#include <string>
+#include <span>
 #include <vector>
 
 #include "parsing.hpp"
 #include "printer.hpp"
 #include "types.hpp"
 
-using std::string;
-
 int main(int argc, char *argv[]) {
-  using namespace zz;
+  zz::Options options = zz::parseCommandLineArgs(std::span(argv, argc));
 
-  Options parsedOptions = Parser::parseCommandLineArgs(argc, argv);
-
-  std::vector<string> gitignorePatterns = Parser::parseGitIgnore();
-
-  try {
-    Printer::printDirectory(fs::current_path(), parsedOptions, 0,
-                            gitignorePatterns);
-  } catch (const std::exception &e) {
-    std::cerr << "Error: " << e.what() << std::endl;
-    return 1;
+  std::vector<std::string> gitignorePatterns;
+  if (options.use_gitignore) {
+    gitignorePatterns = zz::parseGitIgnore();
   }
 
-  return 0;
+  try {
+    zz::printDirectory(std::filesystem::current_path(), options, 0,
+                       gitignorePatterns);
+  } catch (const std::exception &e) {
+    std::cerr << "Error: " << e.what() << "\n";
+    return 1;
+  }
 }

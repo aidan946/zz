@@ -1,5 +1,7 @@
 
+#include <expected>
 #include <filesystem>
+#include <system_error>
 #include <vector>
 
 #include "sorter.hpp"
@@ -7,10 +9,38 @@
 
 namespace fs = std::filesystem;
 
+namespace {
+
+static void sortFileFolder(std::vector<fs::directory_entry> &v) {
+  std::vector<fs::directory_entry> newEntriesVector;
+  for (const auto &e : v) {
+    if (e.is_directory()) {
+      newEntriesVector.push_back(e);
+    } else if (e.is_regular_file()) {
+      newEntriesVector.push_back(e);
+    }
+  }
+  v = newEntriesVector;
+}
+
+static void sortFolderFile(std::vector<fs::directory_entry> &v) {
+  std::vector<fs::directory_entry> new_entries_vector;
+  for (const auto &e : v) {
+    if (e.is_regular_file()) {
+      new_entries_vector.push_back(e);
+    } else if (e.is_directory()) {
+      new_entries_vector.push_back(e);
+    }
+  }
+  v = new_entries_vector;
+}
+
+} // namespace
+
 namespace zz {
 
-std::vector<fs::directory_entry> Sorter::sortDirectory(const fs::path &dirPath,
-                                                       Sorting sorting) {
+std::expected<std::vector<fs::directory_entry>, std::error_code>
+sortDirectory(const fs::path &dirPath, Sorting sorting) {
   std::vector<fs::directory_entry> entries;
   std::error_code ec;
 
@@ -18,37 +48,16 @@ std::vector<fs::directory_entry> Sorter::sortDirectory(const fs::path &dirPath,
     entries.push_back(entry);
   }
 
+  if (ec) {
+    return std::unexpected(ec);
+  }
+
   if (sorting == Sorting::FILE_FOLDER) {
-    sort_file_folder(entries);
+    sortFileFolder(entries);
   } else if (sorting == Sorting::FOLDER_FILE) {
-    sort_folder_file(entries);
+    sortFolderFile(entries);
   }
   return entries;
 }
 
-void Sorter::sort_file_folder(std::vector<fs::directory_entry> &v) {
-  int n = v.size();
-  std::vector<fs::directory_entry> files;
-  std::vector<fs::directory_entry> folders;
-  for (int i = 0; i < n - 1; i++) {
-    if (v[i].is_directory()) {
-      files.push_back(v[i]);
-    } else if (v[i].is_regular_file()) {
-      files.push_back(v[i]);
-    }
-  }
-}
-
-void Sorter::sort_folder_file(std::vector<fs::directory_entry> &v) {
-  int n = v.size();
-  std::vector<fs::directory_entry> files;
-  std::vector<fs::directory_entry> folders;
-  for (int i = 0; i < n - 1; i++) {
-    if (v[i].is_regular_file()) {
-      files.push_back(v[i]);
-    } else if (v[i].is_directory()) {
-      files.push_back(v[i]);
-    }
-  }
-}
 } // namespace zz

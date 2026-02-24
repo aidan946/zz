@@ -4,6 +4,17 @@ namespace zz {
 
 enum class Sorting { FOLDER_FILE, FILE_FOLDER, NONE };
 
+enum class EntryKind {
+  Directory,
+  File,
+  Symlink,
+  BlockDevice,
+  CharacterDevice,
+  NamedPipe,
+  Socket,
+  Unknown,
+};
+
 struct Options {
   int recursive = 0;
   bool details = false;

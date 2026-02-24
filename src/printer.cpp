@@ -1,7 +1,10 @@
-#include <filesystem>
-#include <iostream>
-#include <cmath>
+#include <algorithm>
 #include <cstdint>
+#include <expected>
+#include <filesystem>
+#include <format>
+#include <iostream>
+#include <print>
 
 #include "printer.hpp"
 #include "sorter.hpp"
@@ -9,9 +12,9 @@
 
 namespace fs = std::filesystem;
 
-namespace zz {
+namespace {
 
-std::string Printer::getIcon(const fs::directory_entry &entry, bool useIcons) {
+std::string getIcon(const fs::directory_entry &entry, bool useIcons) {
   if (!useIcons)
     return "";
 
@@ -24,159 +27,122 @@ std::string Printer::getIcon(const fs::directory_entry &entry, bool useIcons) {
   }
 }
 
-std::string Printer::getEntryKind(const fs::directory_entry &entry) {
-  if (entry.is_directory()) {
-    return "directory";
-  } else if (entry.is_regular_file()) {
-    return "file";
-  } else if (entry.is_symlink()) {
-    return "sym_link";
-  } else if (entry.is_block_file()) {
-    return "block_device";
-  } else if (entry.is_character_file()) {
-    return "character_device";
-  } else if (entry.is_fifo()) {
-    return "named_pipe";
-  } else if (entry.is_socket()) {
-    return "unix_domain_socket";
-  } else {
-    return "unknown";
-  }
+zz::EntryKind getEntryKind(const fs::directory_entry &entry) {
+  using zz::EntryKind;
+  if (entry.is_directory())
+    return EntryKind::Directory;
+  if (entry.is_regular_file())
+    return EntryKind::File;
+  if (entry.is_symlink())
+    return EntryKind::Symlink;
+  if (entry.is_block_file())
+    return EntryKind::BlockDevice;
+  if (entry.is_character_file())
+    return EntryKind::CharacterDevice;
+  if (entry.is_fifo())
+    return EntryKind::NamedPipe;
+  if (entry.is_socket())
+    return EntryKind::Socket;
+  return EntryKind::Unknown;
 }
 
-bool Printer::shouldRecursivePrint(const Options &options, uint8_t depth,
-                                   const std::string &entryKind) {
-  return entryKind == "directory" && options.recursive > 0 &&
+bool shouldRecursivePrint(const zz::Options &options, uint8_t depth,
+                          zz::EntryKind kind) {
+  return kind == zz::EntryKind::Directory && options.recursive > 0 &&
          depth < options.recursive;
 }
 
-bool Printer::isGitIgnored(const std::string &name,
-                           const std::vector<std::string> &patterns) {
-  for (const auto &pattern : patterns) {
-    if (pattern == name) {
+bool isGitIgnored(const std::string &name,
+                  const std::vector<std::string> &patterns) {
+  auto matches = [&name](const std::string &pattern) {
+    if (pattern == name)
       return true;
-    }
-
     // Handle directory patterns ending with '/'
-    if (pattern.length() > 1 && pattern.back() == '/') {
-      std::string dirPattern = pattern.substr(0, pattern.length() - 1);
-      if (dirPattern == name) {
-        return true;
-      }
-    }
-
+    if (pattern.length() > 1 && pattern.back() == '/')
+      return pattern.substr(0, pattern.length() - 1) == name;
     // Handle patterns starting with '/'
-    if (pattern.length() > 1 && pattern.front() == '/') {
-      std::string cleanPattern = pattern.substr(1);
-      if (cleanPattern == name) {
-        return true;
-      }
-    }
-  }
-  return false;
+    if (pattern.length() > 1 && pattern.front() == '/')
+      return pattern.substr(1) == name;
+    return false;
+  };
+  return std::ranges::any_of(patterns, matches);
 }
 
-std::string Printer::getIndentation(uint8_t depth) {
+std::string getIndentation(uint8_t depth) {
   return std::string(depth * 2, ' ');
 }
 
-std::string Printer::getFileSize(const fs::directory_entry &entry,
-                                 bool isDeatils) {
-  if (isDeatils == true) {
-    if (entry.is_directory()) {
-      return "-";
-    } else {
-      auto size = entry.file_size();
-      int o{};
-      double mantissa = size;
-      for (; mantissa >= 1024.; mantissa /= 1024., ++o)
-        ;
-      int humanizedSize = std::ceil(mantissa * 10.) / 10.;
-      const char humanizedEnding = "BKMGTPE"[o];
-      return o ? std::to_string(humanizedSize) + humanizedEnding + "B" + " "
-               : std::to_string(humanizedSize) + humanizedEnding + " ";
-    }
-  } else {
+std::string getFileSize(const fs::directory_entry &entry, bool isDetails) {
+  if (!isDetails)
     return " ";
-  }
+  if (entry.is_directory())
+    return "- ";
+
+  auto size = entry.file_size();
+  int o{};
+  double mantissa = size;
+  for (; mantissa >= 1024. && o < 6; mantissa /= 1024., ++o)
+    ;
+  constexpr std::string_view suffixes = "BKMGTPE";
+  return o ? std::format("{:.1f}{}B ", mantissa, suffixes[o])
+           : std::format("{:.1f}{} ", mantissa, suffixes[o]);
 }
 
-std::string Printer::getPermissions(const fs::directory_entry &entry,
-                                    bool isDeatils) {
-  if (isDeatils == true) {
-    fs::perms p = fs::status(entry.path()).permissions();
-
-    using fs::perms;
-    auto show = [=](char op, perms perm) -> std::string {
-      return (perms::none == (perm & p) ? "-" : std::string(1, op));
-    };
-
-    std::string output;
-    output += show('r', perms::owner_read);
-    output += show('w', perms::owner_write);
-    output += show('x', perms::owner_exec);
-    output += show('r', perms::group_read);
-    output += show('w', perms::group_write);
-    output += show('x', perms::group_exec);
-    output += show('r', perms::others_read);
-    output += show('w', perms::others_write);
-    output += show('x', perms::others_exec);
-
-    return output + " ";
-  } else {
+std::string getPermissions(const fs::directory_entry &entry, bool isDetails) {
+  if (!isDetails)
     return " ";
-  }
+
+  fs::perms p = entry.status().permissions();
+  using fs::perms;
+  auto bit = [&](char op, perms perm) -> char {
+    return (perms::none == (perm & p)) ? '-' : op;
+  };
+
+  return std::format("{}{}{}{}{}{}{}{}{} ", bit('r', perms::owner_read),
+                     bit('w', perms::owner_write), bit('x', perms::owner_exec),
+                     bit('r', perms::group_read), bit('w', perms::group_write),
+                     bit('x', perms::group_exec), bit('r', perms::others_read),
+                     bit('w', perms::others_write),
+                     bit('x', perms::others_exec));
 }
 
-void Printer::printDirectory(
-    const fs::path &dirPath, Options &options, uint8_t depth,
-    const std::vector<std::string> &gitignorePatterns) {
-  std::error_code ec;
+} // namespace
 
-  std::vector<fs::directory_entry> sortedDir;
+namespace zz {
 
-  if (options.sorting != Sorting::NONE) {
-    sortedDir = Sorter::sortDirectory(dirPath, options.sorting);
-  } else {
-    auto collectEntries = [](const fs::path &path, std::error_code &ec) {
-      std::vector<fs::directory_entry> entries;
-      for (const auto &entry : fs::directory_iterator(path, ec)) {
-        entries.push_back(entry);
-      }
-      return entries;
-    };
-    sortedDir = collectEntries(dirPath, ec);
+void printDirectory(const fs::path &dirPath, const Options &options,
+                    uint8_t depth,
+                    const std::vector<std::string> &gitignorePatterns) {
+
+  auto result = sortDirectory(dirPath, options.sorting);
+  if (!result) {
+    std::println(std::cerr, "Error reading directory '{}': {}",
+                 dirPath.string(), result.error().message());
+    return;
   }
 
-  for (const auto &entry : sortedDir) {
-    if (ec) {
-      std::cerr << "Error reading directory: " << ec.message() << std::endl;
-      continue;
-    }
-
+  for (const auto &entry : *result) {
     std::string icon = getIcon(entry, options.icons);
-    std::string entryKind = getEntryKind(entry);
+    EntryKind kind = getEntryKind(entry);
     std::string indentation = getIndentation(depth);
     std::string filename = entry.path().filename().string();
-    std::string ending = options.list ? "\n" : "  ";
     std::string size = getFileSize(entry, options.details);
     std::string permissions = getPermissions(entry, options.details);
 
-    bool shouldPrint = true;
-    if (options.use_gitignore && isGitIgnored(filename, gitignorePatterns)) {
-      shouldPrint = false;
+    if (options.use_gitignore && isGitIgnored(filename, gitignorePatterns))
+      continue;
+
+    if (options.list) {
+      std::println("{}{} {}{}{}", indentation, icon, size, permissions,
+                   filename);
+    } else {
+      std::print("{}{} {}{}{}  ", indentation, icon, size, permissions,
+                 filename);
     }
 
-    if (shouldPrint) {
-      if (shouldRecursivePrint(options, depth, entryKind)) {
-        std::cout << indentation << icon << " " << size << permissions
-                  << filename << ending;
-        printDirectory(entry.path(), options, depth + 1, gitignorePatterns);
-      } else {
-        std::cout << indentation << icon << " " << size << permissions
-                  << filename << ending;
-      }
-    }
+    if (shouldRecursivePrint(options, depth, kind))
+      printDirectory(entry.path(), options, depth + 1, gitignorePatterns);
   }
 }
+
 } // namespace zz

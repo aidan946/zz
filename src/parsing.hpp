@@ -1,15 +1,13 @@
 #pragma once
 
 #include "types.hpp"
-#include <vector>
+#include <span>
 #include <string>
+#include <vector>
 
 namespace zz {
 
-class Parser {
-public:
-  static Options parseCommandLineArgs(int argc, char *argv[]);
-  static std::vector<std::string> parseGitIgnore();
-};
+Options parseCommandLineArgs(std::span<char *> args);
+std::vector<std::string> parseGitIgnore();
 
 } // namespace zz

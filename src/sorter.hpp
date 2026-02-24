@@ -1,21 +1,14 @@
 #pragma once
 
-#include <filesystem>
-#include <vector>
-
 #include "types.hpp"
-
-namespace fs = std::filesystem;
+#include <expected>
+#include <filesystem>
+#include <system_error>
+#include <vector>
 
 namespace zz {
 
-class Sorter {
-public:
-  static std::vector<fs::directory_entry> sortDirectory(const fs::path &dirPath,
-                                                        Sorting sorting);
-
-  static void sort_file_folder(std::vector<fs::directory_entry>&);
-  static void sort_folder_file(std::vector<fs::directory_entry>&);
-};
+std::expected<std::vector<std::filesystem::directory_entry>, std::error_code>
+sortDirectory(const std::filesystem::path &dirPath, Sorting sorting);
 
 } // namespace zz
